@@ -1,0 +1,25 @@
+{
+  "name": "fishgod",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev:watch": "tsc -w",
+    "build": "tsc -p tsconfig.json",
+    "postinstall": "npm run build",
+    "start": "node dist/fishgod.js"
+  },
+  "author": "Ghost",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^10.1.1",
+    "@types/request-promise-native": "^1.0.14",
+    "discord.js": "^11.5.1",
+    "electron": "^7.0.1",
+    "request": "^2.86.0",
+    "request-promise-native": "^1.0.5",
+    "ts-node": "^6.0.3",
+    "typescript": "^2.8.3",
+    "typescript-map": "0.0.6"
+  }
+}

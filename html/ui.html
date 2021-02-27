@@ -1,0 +1,188 @@
+<html>
+    <head>
+        <style>
+            body, html, .selectbox {
+                background-color: #252525;
+                height: 100%;
+                width: 100%;
+                padding: 0;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                color:  white;
+            }
+            .commandbox {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 80%;
+                width: 100%;
+            }
+            .commandbox > div > span {
+                margin: 10px;
+            }
+            .controlbox > div {
+                margin: 10px;
+            }
+        </style>
+        <title>Fishgod v2</title>
+    </head>
+    <body>
+        <div class="serverselectbox selectbox">
+            Select a Server
+            <select id="serverselect">
+            </select>
+            <button onclick="selectServer()">Select</button>
+        </div>
+        <div class="userselectbox selectbox" style="display: none">
+            Select a User
+            <select id="userselect">
+            </select>
+            <button onclick="selectUser()">Select</button>
+        </div>
+        <div class="channelselectbox selectbox" style="display: none">
+            Select a Channel
+            <select id="channelselect">
+            </select>
+            <button onclick="selectChannel()">Select</button>
+        </div>
+        <div class="botselectbox selectbox" style="display: none">
+            Whos the Fishing bot?
+            <select id="botselect">
+            </select>
+            <button onclick="selectBot()">Select</button>
+        </div>
+        <div class="controlbox selectbox" style="display: none">
+            <div class="commandbox">
+
+            </div>
+            <div>
+                Fish every
+                <input type="text" id="cooldownbox">
+                s.
+                <button onclick="startFishing()">Go!</button>
+                <button onclick="stopFishing()">Stop!</button>
+            </div>
+            <div>
+                Execute
+                <input type="text" id="commandinput">
+                every
+                <input type="text" id="commandcdinput">
+                s.
+                <button onclick="addCommand()">Add!</button>
+            </div>
+            <div>
+                <button onclick="halt()">Emergency Stop!</button>
+                <button onclick="resume()">Resume</button>
+            </div>
+        </div>
+    </body>
+    <script>
+        const electron = require('electron');
+        const serverselect = document.querySelector('#serverselect');
+        const serverselectbox = document.querySelector('.serverselectbox');
+        const userselect = document.querySelector('#userselect');
+        const userselectbox = document.querySelector('.userselectbox');
+        const channelselect = document.querySelector('#channelselect');
+        const channelselectbox = document.querySelector('.channelselectbox');
+        const botselect = document.querySelector('#botselect');
+        const botselectbox = document.querySelector('.botselectbox');
+        const controlbox = document.querySelector('.controlbox');
+        const commandbox = document.querySelector('.commandbox');
+        electron.ipcRenderer.on('addServerOptions', (e, options) => {
+            for (const option of options) {
+                const opt = document.createElement('option');
+                opt.innerHTML = option[1];
+                opt.id = option[0];
+                serverselect.appendChild(opt);
+            }
+        });
+        electron.ipcRenderer.on('addUserOptions', (e, options) => {
+            serverselectbox.style.display = 'none';
+            userselectbox.style.display = 'flex';
+            for (const option of options) {
+                const opt = document.createElement('option');
+                opt.innerHTML = option[1];
+                opt.id = option[0];
+                userselect.appendChild(opt);
+            }
+        });
+        electron.ipcRenderer.on('addChannelOptions', (e, options) => {
+            userselectbox.style.display = 'none';
+            channelselectbox.style.display = 'flex';
+            for (const option of options) {
+                const opt = document.createElement('option');
+                opt.innerHTML = option[1];
+                opt.id = option[0];
+                channelselect.appendChild(opt);
+            }
+        });
+        electron.ipcRenderer.on('addBotOptions', (e, options) => {
+            channelselectbox.style.display = 'none';
+            botselectbox.style.display = 'flex';
+            for (const option of options) {
+                const opt = document.createElement('option');
+                opt.innerHTML = option[1];
+                opt.id = option[0];
+                botselect.appendChild(opt);
+            }
+        });
+        electron.ipcRenderer.on('done', (e) => {
+            botselectbox.style.display = 'none';
+            controlbox.style.display = 'flex';
+        });
+        electron.ipcRenderer.on('updateCommands', (e, commands) => {
+            commandbox.innerHTML = '';
+            for (const cmd of commands) {
+                const div = document.createElement('div');
+                const span1 = document.createElement('span');
+                span1.innerHTML = cmd.command;
+                div.appendChild(span1);
+                const span2 = document.createElement('span');
+                span2.innerHTML = (cmd.cd / 1000).toString() + 's';
+                div.appendChild(span2);
+                const span3 = document.createElement('span');
+                span3.innerHTML = cmd.running ? 'Stop' : 'Start';
+                span3.onclick = () => {
+                    electron.ipcRenderer.send('toggleCommand', cmd.command, !cmd.running);
+                }
+                div.appendChild(span3);
+                commandbox.appendChild(div);
+            }
+        });
+        const selectServer = () => {
+            const id = serverselect.options[serverselect.selectedIndex].id;
+            electron.ipcRenderer.send('selectServer', id);
+        }
+        const selectUser = () => {
+            const id = userselect.options[userselect.selectedIndex].id;
+            electron.ipcRenderer.send('selectUser', id);
+        }
+        const selectChannel = () => {
+            const id = channelselect.options[channelselect.selectedIndex].id;
+            electron.ipcRenderer.send('selectChannel', id);
+        }
+        const selectBot = () => {
+            const id = botselect.options[botselect.selectedIndex].id;
+            electron.ipcRenderer.send('selectBot', id);
+        }
+        const startFishing = () => {
+            electron.ipcRenderer.send('startFishing', parseFloat(document.querySelector('#cooldownbox').value) || 3.6);
+        }
+        const stopFishing = () => {
+            electron.ipcRenderer.send('stopFishing');
+        }
+        const halt = () => {
+            electron.ipcRenderer.send('halt!');
+        }
+        const resume = () => {
+            electron.ipcRenderer.send('resume');
+        }
+        const addCommand = () => {
+            electron.ipcRenderer.send('addCommand', document.querySelector('#commandinput').value, document.querySelector('#commandcdinput').value);
+        }
+    </script>
+</html>
