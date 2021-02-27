@@ -5,6 +5,8 @@ import { parse } from 'url';
 
 const settings = require('../settings.json');
 
+const discordBotToken = "";
+
 app.once('ready', () => {
     let stopped = false;
     let halted = false;
@@ -32,7 +34,7 @@ app.once('ready', () => {
     uiWindow.loadURL(join(__dirname, '../html/ui.html'))
     discordWindow.loadURL('https://discordapp.com/channels/@me');
     const discordbot = new Client();
-    discordbot.login('NjQxMTE2NDI0ODczNTc0NDIy.XcDsWg.9y9cLZoRONf9PqwndqPIadA6Sms').then(() => {
+    discordbot.login(discordBotToken).then(() => {
         uiWindow.webContents.send('addServerOptions', discordbot.guilds.map(guild => [guild.id, guild.name]));
     });
     const sendMessage = (channel, content) => {
@@ -181,9 +183,6 @@ app.once('ready', () => {
                         stopped = true;
                         console.log('Stopped fishing');
                     }
-                    setTimeout(() => {
-                        halted = true;
-                    }, 7200000)
                     ipcMain.on('stopFishing', (e) => {
                         stop();
                     });
